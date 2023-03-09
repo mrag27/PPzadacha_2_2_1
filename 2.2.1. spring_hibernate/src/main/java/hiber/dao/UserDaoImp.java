@@ -4,6 +4,7 @@ import hiber.model.User;
 import org.hibernate.SessionFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.TypedQuery;
 import java.util.List;
@@ -11,8 +12,11 @@ import java.util.List;
 @Repository
 public class UserDaoImp implements UserDao {
 
-    @Autowired
     private SessionFactory sessionFactory;
+    @Autowired
+    public UserDaoImp(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
 
     @Override
     public void add(User user) {
@@ -21,14 +25,16 @@ public class UserDaoImp implements UserDao {
 
     @Override
     public List<User> listUsers() {
-        TypedQuery<User> query = sessionFactory.getCurrentSession().createQuery("from User");
+        String sql = "from User";
+        TypedQuery<User> query = sessionFactory.getCurrentSession().createQuery(sql);
         return query.getResultList();
     }
 
     @Override
     public User getUserWithCar(String model, int series) {
+        String sql = "from User as user where user.car.model = :model and user.car.series = :series";
         TypedQuery<User> query = sessionFactory.getCurrentSession()
-                .createQuery("from User as user where user.car.model = :model and user.car.series = :series", User.class)
+                .createQuery(sql, User.class)
                 .setParameter("model", model)
                 .setParameter("series", series);
         return query.getResultList().get(0);
